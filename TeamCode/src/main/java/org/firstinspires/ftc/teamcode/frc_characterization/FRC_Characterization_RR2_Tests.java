@@ -97,17 +97,16 @@ public class FRC_Characterization_RR2_Tests extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-
-
+//          TODO: ADD CHARACTERIZATION CODE HERE
 
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+            double leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
+            double rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
 
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+            leftFrontDrive.setPower(leftPower);
+            rightFrontDrive.setPower(rightPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

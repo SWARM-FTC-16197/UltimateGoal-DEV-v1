@@ -53,65 +53,76 @@ public class FRC_Characterization_RR2_Tests extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightBackDrive = null;
 
-    RevBulkData bulkData;
-    AnalogInput a0, a1, a2, a3;
-    DigitalChannel d0, d1, d2, d3, d4, d5, d6, d7;
-    ExpansionHubMotor motor0, motor1, motor2, motor3;
+//    RevBulkData bulkData;
+//    AnalogInput a0, a1, a2, a3;
+//    DigitalChannel d0, d1, d2, d3, d4, d5, d6, d7;
+    ExpansionHubMotor leftFrontDrive, rightFrontDrive;
     ExpansionHubEx expansionHub;
 
-
+    Number[] numberArray = new Number[10];
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
-
         expansionHub = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
-        motor0 = (ExpansionHubMotor) hardwareMap.dcMotor.get("left_front_drive");
-        motor1 = (ExpansionHubMotor) hardwareMap.dcMotor.get("right_front_drive");
-        motor2 = (ExpansionHubMotor) hardwareMap.dcMotor.get("left_back_drive");
-        motor3 = (ExpansionHubMotor) hardwareMap.dcMotor.get("right_back_drive");
+        leftFrontDrive = (ExpansionHubMotor) hardwareMap.dcMotor.get("left_front_drive");
+        rightFrontDrive = (ExpansionHubMotor) hardwareMap.dcMotor.get("right_front_drive");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        double leftFrontPower;
-        double rightFrontPower;
-        double leftBackPower;
-        double rightBackPower;
+        double leftFrontPower = 0;
+        double rightFrontPower = 0;
+        double previousPower = 0;
 
         waitForStart();
         runtime.reset();
 
         while (opModeIsActive()) {
 
-//          TODO: ADD CHARACTERIZATION CODE HERE
+//          TODO: CHECK CHARACTERIZATION CODE
+            double now = runtime.nanoseconds();
+
+            double leftFrontPosition = leftFrontDrive.getCurrentPosition() * encoderConstant;
+            double leftFrontRate = leftFrontDrive.getVelocity() * encoderConstant;
+
+            double rightFrontPosition = rightFrontDrive.getCurrentPosition() * encoderConstant;
+            double rightFrontRate = rightFrontDrive.getVelocity() * encoderConstant;
+
+            double battery = expansionHub.read12vMonitor(ExpansionHubEx.VoltageUnits.VOLTS);
+            double motorVolts = battery * Math.abs(previousPower);
+
+            double leftFrontMotorVolts = motorVolts;
+            double rightFrontMotorVolts = motorVolts;
 
             double drive = -gamepad1.left_stick_y;
             double turn  =  gamepad1.right_stick_x;
-            double leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            double rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+            leftFrontPower    = Range.clip(drive + turn, -1.0, 1.0) ;
+            rightFrontPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+            previousPower = (0.5 * (leftFrontPower + rightFrontPower));
 
 
-            leftFrontDrive.setPower(leftPower);
-            rightFrontDrive.setPower(rightPower);
+            leftFrontDrive.setPower(leftFrontPower);
+            rightFrontDrive.setPower(rightFrontPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("Motors", "left_front (%.2f), right_front (%.2f)", leftFrontPower, rightFrontPower);
             telemetry.update();
+
+            numberArray[0] = now;
+            numberArray[1] = battery;
+            numberArray[2] = (0.5 * (leftFrontPower + rightFrontPower));
+            numberArray[3] = leftFrontMotorVolts;
+            numberArray[4] = rightFrontMotorVolts;
+            numberArray[5] = leftFrontPosition;
+            numberArray[6] = rightFrontPosition;
+            numberArray[7] = leftFrontRate;
+            numberArray[8] = rightFrontRate;
+            numberArray[9] = 0;
         }
     }
 }

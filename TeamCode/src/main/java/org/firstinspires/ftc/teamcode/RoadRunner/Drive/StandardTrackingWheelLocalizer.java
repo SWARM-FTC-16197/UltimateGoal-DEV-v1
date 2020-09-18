@@ -31,16 +31,19 @@ import java.util.List;
  */
 @Config
 public class StandardTrackingWheelLocalizer implements Localizer {
-    public static double TICKS_PER_REV = 0;
-    public static double WHEEL_RADIUS = 2; // in
+    public static double TICKS_PER_REV = 2048;
+    public static double WHEEL_RADIUS = 58/25.4; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double LATERAL_DISTANCE = 10; // in; distance between the left and right wheels
-    public static double FORWARD_OFFSET = 4; // in; offset of the lateral wheel
+    public static double TRACK_WIDTH = 10; // in; distance between the left and right wheels
+    public static double TURN_ADJUSTMENT_FACTOR = 4; // in; offset of the lateral wheel
 
-    public static double leftEncoderPosition;
-    public static double rightEncoderPosition;
-    public static double strafeEncoderPosition;
+    public double leftStartEncoderPosition;
+    public double rightStartEncoderPosition;
+
+    public double leftEncoderPosition;
+    public double rightEncoderPosition;
+    public double strafeEncoderPosition;
 
     public double lastLeftEncoderPosition;
     public double lastRightEncoderPosition;
@@ -48,18 +51,29 @@ public class StandardTrackingWheelLocalizer implements Localizer {
 
     public double leftEncoderDelta;
     public double rightEncoderDelta;
-    public double strafEncoderDelta;
+    public double strafeEncoderDelta;
 
     public double currentRobotX;
     public double currentRobotY;
     public double currentRobotTheta;
 
-    private RevEncoder leftEncoder, rightEncoder, frontEncoder;
+    public double lastRobotTheta;
+    public double deltaRobotTheta;
+
+    public double compensationEstimate;
+
+    public double relativeY;
+    public double relativeX;
+
+    public double movementRadius;
+    public double strafeRadius;
+
+    private RevEncoder leftEncoder, rightEncoder, strafeEncoder;
 
     public StandardTrackingWheelLocalizer(HardwareMap hardwareMap) {
         leftEncoder = new RevEncoder(hardwareMap.get(DcMotorEx.class, "leftEncoder"));
         rightEncoder = new RevEncoder(hardwareMap.get(DcMotorEx.class, "rightEncoder"));
-        frontEncoder = new RevEncoder(hardwareMap.get(DcMotorEx.class, "frontEncoder"));
+        strafeEncoder = new RevEncoder(hardwareMap.get(DcMotorEx.class, "frontEncoder"));
 
         // TODO: reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
     }
@@ -73,7 +87,7 @@ public class StandardTrackingWheelLocalizer implements Localizer {
         return Arrays.asList(
                 encoderTicksToInches(leftEncoder.getCurrentPosition()),
                 encoderTicksToInches(rightEncoder.getCurrentPosition()),
-                encoderTicksToInches(frontEncoder.getCurrentPosition())
+                encoderTicksToInches(strafeEncoder.getCurrentPosition())
         );
     }
 
@@ -86,7 +100,7 @@ public class StandardTrackingWheelLocalizer implements Localizer {
         return Arrays.asList(
                 encoderTicksToInches(leftEncoder.getCorrectedVelocity()),
                 encoderTicksToInches(rightEncoder.getCorrectedVelocity()),
-                encoderTicksToInches(frontEncoder.getCorrectedVelocity())
+                encoderTicksToInches(strafeEncoder.getCorrectedVelocity())
         );
     }
 
@@ -98,18 +112,67 @@ public class StandardTrackingWheelLocalizer implements Localizer {
 
     @Override
     public void update() {
+        leftEncoderPosition = encoderTicksToInches(leftEncoder.getCurrentPosition());
+        rightEncoderPosition = encoderTicksToInches(rightEncoder.getCurrentPosition());
+        strafeEncoderPosition = encoderTicksToInches(strafeEncoder.getCurrentPosition());
 
+        leftEncoderDelta = leftEncoderPosition-lastLeftEncoderPosition;
+        rightEncoderDelta = rightEncoderPosition-lastRightEncoderPosition;
+        strafeEncoderDelta = strafeEncoderPosition-lastStrafeEncoderPosition;
+
+        //use absolute for robot heading
+        currentRobotTheta = AngleWrap(((leftEncoderPosition-leftStartEncoderPosition)-(rightEncoderPosition-rightStartEncoderPosition))/TRACK_WIDTH);
+        deltaRobotTheta = AngleWrap(currentRobotTheta - lastRobotTheta);
+
+        relativeY=(leftEncoderDelta+rightEncoderDelta)/2;
+        compensationEstimate = deltaRobotTheta * TURN_ADJUSTMENT_FACTOR;
+        relativeX = strafeEncoderPosition-compensationEstimate;
+
+        if (Math.abs(deltaRobotTheta) > 0) {
+            movementRadius = (leftEncoderDelta+rightEncoderDelta)/(2*deltaRobotTheta);
+            strafeRadius = compensationEstimate/deltaRobotTheta;
+
+            relativeY = (movementRadius * Math.sin(deltaRobotTheta)) - (strafeRadius * (1 - Math.cos(deltaRobotTheta)));
+            relativeX = movementRadius * (1 - Math.cos(deltaRobotTheta)) + (strafeRadius * Math.sin(deltaRobotTheta));
+        }
+
+        currentRobotX += (Math.cos(lastRobotTheta) * relativeY) + (Math.sin(lastRobotTheta) * relativeX);
+        currentRobotY += (Math.sin(lastRobotTheta) * relativeY) - (Math.cos(lastRobotTheta) * relativeX);
+
+        lastLeftEncoderPosition=leftEncoderPosition;
+        lastRightEncoderPosition=rightEncoderPosition;
+        lastStrafeEncoderPosition=strafeEncoderPosition;
+        lastRobotTheta=currentRobotTheta;
     }
 
 
     @Override
     public void setPoseEstimate(@NotNull Pose2d pose2d) {
+        currentRobotX = pose2d.getX();
+        currentRobotY = pose2d.getY();
+        currentRobotTheta = pose2d.getHeading();
 
+        leftStartEncoderPosition = encoderTicksToInches(leftEncoder.getCurrentPosition());
+        rightStartEncoderPosition = encoderTicksToInches(rightEncoder.getCurrentPosition());
+
+        lastLeftEncoderPosition = leftStartEncoderPosition;
+        lastRightEncoderPosition = rightStartEncoderPosition;
+        lastStrafeEncoderPosition = encoderTicksToInches(strafeEncoder.getCurrentPosition());
     }
 
     @Nullable
     @Override
     public Pose2d getPoseVelocity() {
         return null;
+    }
+
+    public static double AngleWrap(double angle){
+        while (angle<-Math.PI){
+            angle += 2.0*Math.PI;
+        }
+        while (angle>Math.PI){
+            angle -= 2.0*Math.PI;
+        }
+        return angle;
     }
 }

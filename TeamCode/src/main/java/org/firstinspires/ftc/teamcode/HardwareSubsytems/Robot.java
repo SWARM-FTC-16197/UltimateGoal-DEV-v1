@@ -27,7 +27,7 @@ public class Robot {
 
     public void init(){
         deviceManager.init();
-        drivetrain = new Drivetrain(opMode, deviceManager);
+        drivetrain = new Drivetrain(opMode.hardwareMap, opMode, deviceManager);
 //        deadWheelLocalizer = new DeadWheelLocalizer(opMode, deviceManager);
 //        imuLocalizer = new IMULocalizer(opMode, deviceManager);
 //        intake = new Intake(opMode, deviceManager);

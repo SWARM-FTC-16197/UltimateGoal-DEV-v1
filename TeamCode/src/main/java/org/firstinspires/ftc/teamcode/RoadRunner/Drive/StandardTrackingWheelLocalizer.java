@@ -32,11 +32,13 @@ import java.util.List;
 @Config
 public class StandardTrackingWheelLocalizer implements Localizer {
     public static double TICKS_PER_REV = 2048;
-    public static double WHEEL_RADIUS = 58/25.4; // in
+    public static double WHEEL_RADIUS = 58/25.4/2; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double TRACK_WIDTH = 10; // in; distance between the left and right wheels
-    public static double TURN_ADJUSTMENT_FACTOR = 4; // in; offset of the lateral wheel
+    public static double TRACK_WIDTH = (166.762+192.762)/2/25.4; // in; distance between the left and right wheels (found in cad, might need tuning)
+    public static double TURN_ADJUSTMENT_FACTOR = 235.222/25.4; // Adustment to compensate for rotations on the strafe wheel
+
+    public static double OFFSET = 63.81/25.4; //Distance from center of forward odo wheels to robot, used to translate odo centric position to robot centric
 
     public double leftStartEncoderPosition;
     public double rightStartEncoderPosition;
@@ -107,7 +109,7 @@ public class StandardTrackingWheelLocalizer implements Localizer {
     @NotNull
     @Override
     public Pose2d getPoseEstimate() {
-        return new Pose2d(currentRobotX, currentRobotY, currentRobotTheta);
+        return new Pose2d(currentRobotX-Math.cos(currentRobotTheta)*OFFSET, currentRobotY-Math.sin(currentRobotTheta)*OFFSET, currentRobotTheta);
     }
 
     @Override

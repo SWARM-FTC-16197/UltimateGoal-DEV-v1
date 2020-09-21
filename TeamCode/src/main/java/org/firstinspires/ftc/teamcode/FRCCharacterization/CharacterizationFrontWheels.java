@@ -97,7 +97,7 @@ public class CharacterizationFrontWheels extends LinearOpMode {
 
             while (power > 0){
                 now = runtime.nanoseconds();
-                power = (1 - now) * POWER_RAMP_FACTOR;
+                power = 1 - (now * POWER_RAMP_FACTOR);
                 recordData(power);
             }
 

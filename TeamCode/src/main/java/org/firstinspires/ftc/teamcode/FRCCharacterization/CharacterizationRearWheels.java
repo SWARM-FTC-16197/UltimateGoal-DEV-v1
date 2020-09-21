@@ -89,6 +89,7 @@ public class CharacterizationRearWheels extends LinearOpMode {
             while (power < 1){
                 now = runtime.nanoseconds();
                 power = POWER_RAMP_FACTOR * now;
+                if (power >= 1) break;
                 recordData(power);
             }
 
@@ -97,6 +98,7 @@ public class CharacterizationRearWheels extends LinearOpMode {
             while (power > 0){
                 now = runtime.nanoseconds();
                 power = 1 - (now * POWER_RAMP_FACTOR);
+                if (power <= 0) break;
                 recordData(power);
             }
 

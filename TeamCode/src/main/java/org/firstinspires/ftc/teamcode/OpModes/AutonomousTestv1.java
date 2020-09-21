@@ -55,6 +55,7 @@ import org.firstinspires.ftc.teamcode.HardwareSubsytems.Robot;
  */
 
 @TeleOp(name="AutonomousTestv1", group="Iterative Opmode")
+@Disabled
 public class AutonomousTestv1 extends OpMode {
     Robot robot;
     Trajectory traj1, traj2, traj3, traj4, traj5, traj6, traj7, traj8;

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.HardwareSubsytems;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -15,8 +16,8 @@ public class DeviceManager{
     public RevBulkData bulkData1, bulkData2;
     ExpansionHubEx expansionHub1, expansionHub2;
 
-    public ExpansionHubMotor leftFrontMotor, rightFrontMotor, leftBackMotor, rightBackMotor,
-                             leftIntakeMotor, rightIntakeMotor,
+//    public ExpansionHubMotor leftFrontMotor, rightFrontMotor, leftBackMotor, rightBackMotor;
+    public ExpansionHubMotor leftIntakeMotor, rightIntakeMotor,
                              leftLiftMotor,
                              lights;
 
@@ -40,10 +41,10 @@ public class DeviceManager{
         expansionHub1 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 1");
         expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
 
-        leftFrontMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftFront");
-        rightFrontMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightFront");
-        leftBackMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftBack");
-        rightBackMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightBack");
+//        leftFrontMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftFront");
+//        rightFrontMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightFront");
+//        leftBackMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftBack");
+//        rightBackMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightBack");
 
         leftIntakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("leftIntake");
         rightIntakeMotor = (ExpansionHubMotor) hardwareMap.dcMotor.get("rightIntake");
@@ -78,6 +79,16 @@ public class DeviceManager{
 
     public void updateOnlyHub2(){
         bulkData2 = expansionHub1.getBulkInputData();
+    }
+
+    public void setBulkReadManual(){
+        expansionHub1.getStandardModule().setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        expansionHub2.getStandardModule().setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+    }
+
+    public void clearBulkCache(){
+        expansionHub1.getStandardModule().clearBulkCache();
+        expansionHub2.getStandardModule().clearBulkCache();
     }
 
 }

@@ -27,7 +27,7 @@ public class Robot {
 
     public void init(){
         deviceManager.init();
-        drivetrain = new Drivetrain(opMode, deviceManager);
+        drivetrain = new Drivetrain(opMode.hardwareMap, opMode, deviceManager);
 //        deadWheelLocalizer = new DeadWheelLocalizer(opMode, deviceManager);
 //        imuLocalizer = new IMULocalizer(opMode, deviceManager);
 //        intake = new Intake(opMode, deviceManager);
@@ -38,5 +38,13 @@ public class Robot {
 //        autoClaw = new AutoClawTele(opMode, deviceManager);
 //        lights = new Lights(opMode, deviceManager);
 //        scissor = new Scissor(opMode, deviceManager);
+    }
+
+    public void setBulkReadManual(){
+        deviceManager.setBulkReadManual();
+    }
+
+    public void clearBulkCache(){
+        deviceManager.clearBulkCache();
     }
 }

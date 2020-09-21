@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode.FRCCharacterization;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,9 +38,9 @@ import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
 
 
-@TeleOp(name="CharacterizationFrontWheels", group="Linear Opmode")
+@TeleOp(name="CharacterizationRearWheels", group="Linear Opmode")
 //@Disabled
-public class CharacterizationFrontWheels extends LinearOpMode {
+public class CharacterizationRearWheels extends LinearOpMode {
 
     static private double WHEEL_DIAMETER = 0.333;
     static private double ENCODER_EDGES_PER_REV = 512 / 4.;
@@ -62,7 +61,7 @@ public class CharacterizationFrontWheels extends LinearOpMode {
 
     final double POWER_RAMP_FACTOR = 0.01;
 
-    double now, leftFrontPosition, leftFrontRate, rightFrontPosition, rightFrontRate, battery, motorVolts, leftFrontMotorVolts, rightFrontMotorVolts;
+    double now, leftRearPosition, leftRearRate, rightRearPosition, rightRearRate, battery, motorVolts, leftRearMotorVolts, rightRearMotorVolts;
 
     @Override
     public void runOpMode() {
@@ -131,17 +130,17 @@ public class CharacterizationFrontWheels extends LinearOpMode {
     }
 
     private void recordData(double newPower){
-        leftFrontPosition = leftFrontDrive.getCurrentPosition() * encoderConstant;
-        leftFrontRate = leftFrontDrive.getVelocity() * encoderConstant;
+        leftRearPosition = leftRearDrive.getCurrentPosition() * encoderConstant;
+        leftRearRate = leftRearDrive.getVelocity() * encoderConstant;
 
-        rightFrontPosition = rightFrontDrive.getCurrentPosition() * encoderConstant;
-        rightFrontRate = rightFrontDrive.getVelocity() * encoderConstant;
+        rightRearPosition = rightRearDrive.getCurrentPosition() * encoderConstant;
+        rightRearRate = rightRearDrive.getVelocity() * encoderConstant;
 
         battery = expansionHub.read12vMonitor(ExpansionHubEx.VoltageUnits.VOLTS);
         motorVolts = battery * Math.abs(previousPower);
 
-        leftFrontMotorVolts = motorVolts;
-        rightFrontMotorVolts = motorVolts;
+        leftRearMotorVolts = motorVolts;
+        rightRearMotorVolts = motorVolts;
 
         previousPower = newPower;
 
@@ -150,12 +149,12 @@ public class CharacterizationFrontWheels extends LinearOpMode {
         numberArray[0] = now;
         numberArray[1] = battery;
         numberArray[2] = newPower;
-        numberArray[3] = leftFrontMotorVolts;
-        numberArray[4] = rightFrontMotorVolts;
-        numberArray[5] = leftFrontPosition;
-        numberArray[6] = rightFrontPosition;
-        numberArray[7] = leftFrontRate;
-        numberArray[8] = rightFrontRate;
+        numberArray[3] = leftRearMotorVolts;
+        numberArray[4] = rightRearMotorVolts;
+        numberArray[5] = leftRearPosition;
+        numberArray[6] = rightRearPosition;
+        numberArray[7] = leftRearRate;
+        numberArray[8] = rightRearRate;
         numberArray[9] = 0;
     }
 

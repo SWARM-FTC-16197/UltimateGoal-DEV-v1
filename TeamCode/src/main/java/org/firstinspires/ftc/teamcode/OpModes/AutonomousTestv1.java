@@ -57,12 +57,13 @@ import org.firstinspires.ftc.teamcode.HardwareSubsytems.Robot;
 @TeleOp(name="AutonomousTestv1", group="Iterative Opmode")
 public class AutonomousTestv1 extends OpMode {
     Robot robot;
-    Trajectory trajectory1;
+    Trajectory traj1, traj2, traj3, traj4, traj5, traj6, traj7, traj8;
     @Override
     public void init() {
         robot = new Robot(this);
-        trajectory1 = robot.drivetrain.trajectoryBuilder(new Pose2d()).forward(60).build();
-        robot.drivetrain.followTrajectoryAsync(trajectory1);
+        traj1 = robot.drivetrain.trajectoryBuilder(new Pose2d()).forward(60).build();
+        robot.drivetrain.followTrajectoryAsync(traj1);
+        robot.setBulkReadManual();
     }
 
     @Override
@@ -71,11 +72,11 @@ public class AutonomousTestv1 extends OpMode {
 
     @Override
     public void start() {
-
     }
 
     @Override
     public void loop() {
+        robot.clearBulkCache();
         robot.drivetrain.update();
     }
 

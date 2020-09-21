@@ -39,4 +39,12 @@ public class Robot {
 //        lights = new Lights(opMode, deviceManager);
 //        scissor = new Scissor(opMode, deviceManager);
     }
+
+    public void setBulkReadManual(){
+        deviceManager.setBulkReadManual();
+    }
+
+    public void clearBulkCache(){
+        deviceManager.clearBulkCache();
+    }
 }

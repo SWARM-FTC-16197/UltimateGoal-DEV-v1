@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.HardwareSubsytems;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -78,6 +79,16 @@ public class DeviceManager{
 
     public void updateOnlyHub2(){
         bulkData2 = expansionHub1.getBulkInputData();
+    }
+
+    public void setBulkReadManual(){
+        expansionHub1.getStandardModule().setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        expansionHub2.getStandardModule().setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+    }
+
+    public void clearBulkCache(){
+        expansionHub1.getStandardModule().clearBulkCache();
+        expansionHub2.getStandardModule().clearBulkCache();
     }
 
 }

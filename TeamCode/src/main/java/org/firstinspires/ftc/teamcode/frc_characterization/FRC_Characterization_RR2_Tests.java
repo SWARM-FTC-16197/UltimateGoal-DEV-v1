@@ -62,6 +62,13 @@ public class FRC_Characterization_RR2_Tests extends LinearOpMode {
 
     Number[] numberArray = new Number[10];
 
+    double leftFrontPower = 0;
+    double rightFrontPower = 0;
+    double leftRearPower = 0;
+    double rightRearPower = 0;
+
+    final double POWER_RAMP_FACTOR = 0.01;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -74,55 +81,96 @@ public class FRC_Characterization_RR2_Tests extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        double leftFrontPower = 0;
-        double rightFrontPower = 0;
         double previousPower = 0;
 
         waitForStart();
         runtime.reset();
 
+        double now, leftFrontPosition, leftFrontRate, rightFrontPosition, rightFrontRate, battery, motorVolts, leftFrontMotorVolts, rightFrontMotorVolts;
+
         while (opModeIsActive()) {
 
-//          TODO: CHECK CHARACTERIZATION CODE
-            double now = runtime.nanoseconds();
-
-            double leftFrontPosition = leftFrontDrive.getCurrentPosition() * encoderConstant;
-            double leftFrontRate = leftFrontDrive.getVelocity() * encoderConstant;
-
-            double rightFrontPosition = rightFrontDrive.getCurrentPosition() * encoderConstant;
-            double rightFrontRate = rightFrontDrive.getVelocity() * encoderConstant;
-
-            double battery = expansionHub.read12vMonitor(ExpansionHubEx.VoltageUnits.VOLTS);
-            double motorVolts = battery * Math.abs(previousPower);
-
-            double leftFrontMotorVolts = motorVolts;
-            double rightFrontMotorVolts = motorVolts;
-
-            double drive = -gamepad1.left_stick_y;
-            double turn  =  gamepad1.right_stick_x;
-            leftFrontPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightFrontPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-            previousPower = (0.5 * (leftFrontPower + rightFrontPower));
-
-
-            leftFrontDrive.setPower(leftFrontPower);
-            rightFrontDrive.setPower(rightFrontPower);
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left_front (%.2f), right_front (%.2f)", leftFrontPower, rightFrontPower);
+            telemetry.addData("Status: ", "Please press 'A' to ramp up");
             telemetry.update();
 
-            numberArray[0] = now;
-            numberArray[1] = battery;
-            numberArray[2] = (0.5 * (leftFrontPower + rightFrontPower));
-            numberArray[3] = leftFrontMotorVolts;
-            numberArray[4] = rightFrontMotorVolts;
-            numberArray[5] = leftFrontPosition;
-            numberArray[6] = rightFrontPosition;
-            numberArray[7] = leftFrontRate;
-            numberArray[8] = rightFrontRate;
-            numberArray[9] = 0;
+            while (!gamepad1.a) {}
+
+            runtime.reset();
+
+            while (leftFrontPower != 1){
+
+                now = runtime.nanoseconds();
+                setMotorPowers(now);
+
+                leftFrontPosition = leftFrontDrive.getCurrentPosition() * encoderConstant;
+                leftFrontRate = leftFrontDrive.getVelocity() * encoderConstant;
+
+                rightFrontPosition = rightFrontDrive.getCurrentPosition() * encoderConstant;
+                rightFrontRate = rightFrontDrive.getVelocity() * encoderConstant;
+
+                battery = expansionHub.read12vMonitor(ExpansionHubEx.VoltageUnits.VOLTS);
+                motorVolts = battery * Math.abs(previousPower);
+
+                leftFrontMotorVolts = motorVolts;
+                rightFrontMotorVolts = motorVolts;
+
+                previousPower = (0.5 * (leftFrontPower + rightFrontPower));
+
+                numberArray[0] = now;
+                numberArray[1] = battery;
+                numberArray[2] = (0.5 * (leftFrontPower + rightFrontPower));
+                numberArray[3] = leftFrontMotorVolts;
+                numberArray[4] = rightFrontMotorVolts;
+                numberArray[5] = leftFrontPosition;
+                numberArray[6] = rightFrontPosition;
+                numberArray[7] = leftFrontRate;
+                numberArray[8] = rightFrontRate;
+                numberArray[9] = 0;
+            }
+
+            telemetry.addData("Status: ", "Please press 'A' to ramp down");
+            telemetry.update();
+
+            while  (!gamepad1.a) {}
+
+            runtime.reset();
+
+            while (leftFrontPower != 0){
+                now = runtime.nanoseconds();
+                setMotorPowers(1 - now);
+
+                leftFrontPosition = leftFrontDrive.getCurrentPosition() * encoderConstant;
+                leftFrontRate = leftFrontDrive.getVelocity() * encoderConstant;
+
+                rightFrontPosition = rightFrontDrive.getCurrentPosition() * encoderConstant;
+                rightFrontRate = rightFrontDrive.getVelocity() * encoderConstant;
+
+                battery = expansionHub.read12vMonitor(ExpansionHubEx.VoltageUnits.VOLTS);
+                motorVolts = battery * Math.abs(previousPower);
+
+                leftFrontMotorVolts = motorVolts;
+                rightFrontMotorVolts = motorVolts;
+
+                previousPower = (0.5 * (leftFrontPower + rightFrontPower));
+
+                numberArray[0] = now;
+                numberArray[1] = battery;
+                numberArray[2] = (0.5 * (leftFrontPower + rightFrontPower));
+                numberArray[3] = leftFrontMotorVolts;
+                numberArray[4] = rightFrontMotorVolts;
+                numberArray[5] = leftFrontPosition;
+                numberArray[6] = rightFrontPosition;
+                numberArray[7] = leftFrontRate;
+                numberArray[8] = rightFrontRate;
+                numberArray[9] = 0;
+            }
         }
+    }
+
+    private void setMotorPowers(double time){
+        leftFrontPower = POWER_RAMP_FACTOR * time;
+        rightFrontPower = POWER_RAMP_FACTOR * time;
+        leftRearPower = POWER_RAMP_FACTOR * time;
+        rightRearPower = POWER_RAMP_FACTOR * time;
     }
 }

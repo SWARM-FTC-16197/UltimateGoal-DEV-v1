@@ -150,8 +150,8 @@ public class StandardTrackingWheelLocalizer implements Localizer {
 
     @Override
     public void setPoseEstimate(@NotNull Pose2d pose2d) {
-        currentRobotX = pose2d.getX();
-        currentRobotY = pose2d.getY();
+        currentRobotX = pose2d.getX()+Math.cos(pose2d.getHeading())*OFFSET;
+        currentRobotY = pose2d.getY()+Math.sin(pose2d.getHeading())*OFFSET;
         currentRobotTheta = pose2d.getHeading();
 
         leftStartEncoderPosition = encoderTicksToInches(leftEncoder.getCurrentPosition());

@@ -34,8 +34,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.openftc.revextensions2.ExpansionHubEx;
 import org.openftc.revextensions2.ExpansionHubMotor;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 
 @TeleOp(name="CharacterizationRearWheels", group="Linear Opmode")
@@ -56,6 +62,10 @@ public class CharacterizationRearWheels extends LinearOpMode {
     ExpansionHubEx expansionHub;
 
     Number[] numberArray = new Number[10];
+
+    String filename = "AdafruitIMUCalibration.json";
+    File file = new File(filename);
+    JSONObject data = new JSONObject();
 
     double power = 0, previousPower = 0;;
 
@@ -90,7 +100,7 @@ public class CharacterizationRearWheels extends LinearOpMode {
                 now = runtime.nanoseconds();
                 power = POWER_RAMP_FACTOR * now;
                 if (power >= 1) break;
-                recordData(power);
+                recordData(power, "slow-forward");
             }
 
             reset("Please press 'A' to ramp down");
@@ -99,7 +109,7 @@ public class CharacterizationRearWheels extends LinearOpMode {
                 now = runtime.nanoseconds();
                 power = 1 - (now * POWER_RAMP_FACTOR);
                 if (power <= 0) break;
-                recordData(power);
+                recordData(power, "slow-backward");
             }
 
             reset("Please press 'A' to set half speed forwards");
@@ -108,7 +118,7 @@ public class CharacterizationRearWheels extends LinearOpMode {
             now = runtime.nanoseconds();
             while (now != ElapsedTime.SECOND_IN_NANO * 0.75){
                 now = runtime.nanoseconds();
-                recordData(0.5);
+                recordData(0.5, "fast-forward");
             }
             setMotorPowers(0);
 
@@ -118,9 +128,19 @@ public class CharacterizationRearWheels extends LinearOpMode {
             now = runtime.nanoseconds();
             while (now != ElapsedTime.SECOND_IN_NANO * 0.75){
                 now = runtime.nanoseconds();
-                recordData(-0.5);
+                recordData(-0.5, "fast-backward");
             }
             setMotorPowers(0);
+        }
+        JSONArray finalData = new JSONArray();
+        finalData.add(data);
+
+        try {
+            FileWriter fw = new FileWriter(file);
+            fw.write(finalData.toJSONString());
+            fw.flush();
+        } catch (IOException e){
+            e.printStackTrace();
         }
     }
 
@@ -131,7 +151,7 @@ public class CharacterizationRearWheels extends LinearOpMode {
         rightRearDrive.setPower(newPower);
     }
 
-    private void recordData(double newPower){
+    private void recordData(double newPower, String loopType){
         leftRearPosition = leftRearDrive.getCurrentPosition() * encoderConstant;
         leftRearRate = leftRearDrive.getVelocity() * encoderConstant;
 
@@ -158,6 +178,10 @@ public class CharacterizationRearWheels extends LinearOpMode {
         numberArray[7] = leftRearRate;
         numberArray[8] = rightRearRate;
         numberArray[9] = 0;
+
+        for (Number number : numberArray) {
+            data.put(loopType, number.toString());
+        }
     }
 
     private void reset(String telemetryData){
